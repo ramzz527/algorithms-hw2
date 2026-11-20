@@ -35,14 +35,19 @@
 | --- | --- |
 | 테스트 | `make test` |
 | 웹 서버 (포트 8000) | `make serve` |
-| 충돌 실험 | `make experiment` |
+| 체이닝 적재율 실험 | `make experiment` |
+| 두 해시 테이블 비교 | `make compare` |
 | 놓친 단계 따라잡기 | `sh tools/catchup.sh <단계 번호>` |
 
 외부 라이브러리는 쓰지 않습니다. Python 표준 모듈만으로 충분합니다.
 
-`make serve`는 포트 8000에서 서버를 실행합니다. Codespaces에서 휴대폰으로
+`make serve`는 기본 포트 8000에서 체이닝 서버를 실행합니다.
+`make serve TABLE=linear`는 선형 탐지 구현을 선택합니다. Codespaces에서 휴대폰으로
 확인하려면 포트 탭에서 8000을 Public으로 바꾸고 전달된 주소를 엽니다.
 확인이 끝나면 서버를 중지하고 포트를 Private으로 되돌립니다.
+
+`make experiment`는 체이닝 실험 표와 그래프를, `make compare`는 두 구현의
+측정·이론 비교 CSV/SVG와 2쪽 이내 PDF 보고서를 `experiments/`에 만듭니다.
 
 ## 로컬에서 하기
 

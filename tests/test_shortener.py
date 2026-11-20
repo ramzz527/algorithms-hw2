@@ -1,5 +1,6 @@
 import unittest
 
+from src.linear_probing import LinearProbingHashTable
 from src.shortener import Shortener
 
 
@@ -39,6 +40,14 @@ class ShortenerTests(unittest.TestCase):
 
     def test_unknown_code_returns_none(self):
         self.assertIsNone(Shortener().expand("unknown"))
+
+    def test_works_with_either_hash_table_implementation(self):
+        for table_factory in (None, LinearProbingHashTable):
+            with self.subTest(table_factory=table_factory):
+                shortener = Shortener(table_factory=table_factory)
+                url = "https://example.com/selected-table"
+                code = shortener.shorten(url)
+                self.assertEqual(shortener.expand(code), url)
 
 
 if __name__ == "__main__":

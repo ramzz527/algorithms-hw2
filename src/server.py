@@ -2,11 +2,17 @@
 
 import argparse
 import html
+from collections.abc import Callable
 from functools import partial
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qsl, urlsplit
 
+from src.hash_table import HashTable
+from src.linear_probing import LinearProbingHashTable
 from src.shortener import Shortener
+
+Table = HashTable | LinearProbingHashTable
+TableFactory = Callable[[], Table]
 
 
 class ShortenerRequestHandler(BaseHTTPRequestHandler):
@@ -43,6 +49,8 @@ class ShortenerRequestHandler(BaseHTTPRequestHandler):
 
     def _render_table(self) -> str:
         table = self.shortener._codes_by_url
+        is_linear = isinstance(table, LinearProbingHashTable)
+        position_name = "Slot" if is_linear else "Bucket"
         rows = []
         for bucket_index, bucket in enumerate(table.bucket_items()):
             if not bucket:
@@ -60,12 +68,22 @@ class ShortenerRequestHandler(BaseHTTPRequestHandler):
                         f"h{step_number} = ({before} * 31 + {value}) "
                         f"% {table.capacity} = {after}"
                     )
+                probe_trace = " &rarr; ".join(
+                    str(index) for index in table.probe_trace(url)
+                )
+                if is_linear:
+                    inspection = f"<p>Slots examined: {probe_trace}</p>"
+                else:
+                    inspection = (
+                        f"<p>Nodes compared: {len(table.probe_trace(url))}</p>"
+                    )
                 entries.append(
                     "<li><code>"
                     f"{html.escape(url)}"
                     "</code> &rarr; <code>"
                     f"{html.escape(code)}"
-                    "</code><ol>"
+                    "</code>"
+                    f"{inspection}<ol>"
                     + "".join(
                         f"<li><code>{html.escape(line)}</code></li>"
                         for line in calculation
@@ -78,9 +96,10 @@ class ShortenerRequestHandler(BaseHTTPRequestHandler):
 
         return (
             "<!doctype html><html lang=\"en\"><meta charset=\"utf-8\">"
-            "<title>Hash table inspection</title><h1>Hash table inspection</h1>"
+            f"<title>{table.strategy.title()} inspection</title>"
+            f"<h1>{table.strategy.title()} inspection</h1>"
             f"<p>Horner hashing with coefficient 31; capacity {table.capacity}.</p>"
-            "<table border=\"1\"><thead><tr><th>Bucket</th>"
+            f"<table border=\"1\"><thead><tr><th>{position_name}</th>"
             "<th>Entries and Horner calculation</th></tr></thead><tbody>"
             f"{''.join(rows)}</tbody></table><p><a href=\"/\">Home</a></p></html>"
         )
@@ -134,10 +153,16 @@ class ShortenerRequestHandler(BaseHTTPRequestHandler):
 
 
 def create_server(
-    host: str = "0.0.0.0", port: int = 8000, shortener: Shortener | None = None
+    host: str = "0.0.0.0",
+    port: int = 8000,
+    shortener: Shortener | None = None,
+    table_factory: TableFactory | None = None,
 ) -> ThreadingHTTPServer:
+    active_shortener = shortener
+    if active_shortener is None:
+        active_shortener = Shortener(table_factory)
     handler = partial(
-        ShortenerRequestHandler, shortener=shortener if shortener is not None else Shortener()
+        ShortenerRequestHandler, shortener=active_shortener
     )
     server = ThreadingHTTPServer((host, port), handler)
     server.daemon_threads = True
@@ -148,9 +173,11 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Run the URL shortener web server.")
     parser.add_argument("--host", default="0.0.0.0")
     parser.add_argument("--port", type=int, default=8000)
+    parser.add_argument("--strategy", choices=("chaining", "linear"), default="chaining")
     args = parser.parse_args()
 
-    server = create_server(args.host, args.port)
+    table_factory = HashTable if args.strategy == "chaining" else LinearProbingHashTable
+    server = create_server(args.host, args.port, table_factory=table_factory)
     print(f"Serving on http://{args.host}:{server.server_port}")
     try:
         server.serve_forever()

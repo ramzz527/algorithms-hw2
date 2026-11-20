@@ -3,6 +3,7 @@ import threading
 import unittest
 from urllib.parse import urlencode
 
+from src.linear_probing import LinearProbingHashTable
 from src.server import create_server
 from src.shortener import Shortener
 
@@ -80,6 +81,32 @@ class ServerTests(unittest.TestCase):
         self.assertIn(b"h1 =", body)
         self.assertIn(b" * 31 + ", body)
         self.assertIn(b"https://example.com/table", body)
+
+    def test_linear_table_page_shows_examined_slots(self):
+        linear_shortener = Shortener(LinearProbingHashTable)
+        linear_shortener.shorten("https://example.com/linear")
+        server = create_server("127.0.0.1", 0, linear_shortener)
+        thread = threading.Thread(target=server.serve_forever)
+        thread.start()
+        try:
+            connection = http.client.HTTPConnection(
+                "127.0.0.1", server.server_port
+            )
+            connection.request("GET", "/table")
+            response = connection.getresponse()
+            status = response.status
+            body = response.read()
+            connection.close()
+        finally:
+            server.shutdown()
+            server.server_close()
+            thread.join()
+
+        self.assertEqual(status, 200)
+        self.assertIn(b"Linear Probing inspection", body)
+        self.assertIn(b"Slot", body)
+        self.assertIn(b"Slots examined:", body)
+        self.assertIn(b"https://example.com/linear", body)
 
 
 if __name__ == "__main__":

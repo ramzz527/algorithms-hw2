@@ -10,21 +10,8 @@ class _Node:
         self.next = next_node
 
 
-class HashTable:
-    def __init__(
-        self, initial_capacity: int = 8, max_load_factor: float | None = 0.75
-    ):
-        if type(initial_capacity) is not int or initial_capacity < 1:
-            raise ValueError("initial_capacity must be a positive integer")
-        if max_load_factor is not None and max_load_factor <= 0:
-            raise ValueError("max_load_factor must be positive or None")
-        self.capacity = initial_capacity
-        self.max_load_factor = max_load_factor
-        self._buckets: list[_Node | None] = [None] * initial_capacity
-        self._size = 0
-
-    def __len__(self) -> int:
-        return self._size
+class _HornerHash:
+    capacity: int
 
     def hash_steps(
         self, key: str, capacity: int | None = None
@@ -46,6 +33,25 @@ class HashTable:
     def _index(self, key: str) -> int:
         steps = self.hash_steps(key)
         return steps[-1][3] if steps else 0
+
+
+class HashTable(_HornerHash):
+    strategy = "chaining"
+
+    def __init__(
+        self, initial_capacity: int = 8, max_load_factor: float | None = 0.75
+    ):
+        if type(initial_capacity) is not int or initial_capacity < 1:
+            raise ValueError("initial_capacity must be a positive integer")
+        if max_load_factor is not None and max_load_factor <= 0:
+            raise ValueError("max_load_factor must be positive or None")
+        self.capacity = initial_capacity
+        self.max_load_factor = max_load_factor
+        self._buckets: list[_Node | None] = [None] * initial_capacity
+        self._size = 0
+
+    def __len__(self) -> int:
+        return self._size
 
     def _find(self, key: str) -> tuple[int, _Node | None, _Node | None]:
         index = self._index(key)
@@ -115,3 +121,15 @@ class HashTable:
                 node = node.next
             buckets.append(bucket)
         return buckets
+
+    def probe_trace(self, key: str) -> list[int]:
+        """Return the bucket visited for each key comparison."""
+        index = self._index(key)
+        trace = []
+        node = self._buckets[index]
+        while node is not None:
+            trace.append(index)
+            if node.key == key:
+                break
+            node = node.next
+        return trace
