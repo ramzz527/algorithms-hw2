@@ -57,7 +57,7 @@ class ShortenerRequestHandler(BaseHTTPRequestHandler):
                 rows.append(f"<tr><td>{bucket_index}</td><td><em>empty</em></td></tr>")
                 continue
 
-            entries = []
+            nodes = []
             for url, code in bucket:
                 trace = table.hash_steps(url)
                 calculation = ["h0 = 0"]
@@ -68,30 +68,41 @@ class ShortenerRequestHandler(BaseHTTPRequestHandler):
                         f"h{step_number} = ({before} * 31 + {value}) "
                         f"% {table.capacity} = {after}"
                     )
-                probe_trace = " &rarr; ".join(
-                    str(index) for index in table.probe_trace(url)
-                )
+                probe_trace = table.probe_trace(url)
                 if is_linear:
-                    inspection = f"<p>Slots examined: {probe_trace}</p>"
-                else:
                     inspection = (
-                        f"<p>Nodes compared: {len(table.probe_trace(url))}</p>"
+                        "<p>Slots examined: "
+                        f"{' &rarr; '.join(str(index) for index in probe_trace)}"
+                        "</p>"
                     )
-                entries.append(
-                    "<li><code>"
-                    f"{html.escape(url)}"
-                    "</code> &rarr; <code>"
-                    f"{html.escape(code)}"
-                    "</code>"
-                    f"{inspection}<ol>"
+                else:
+                    inspection = f"<p>Nodes compared: {len(probe_trace)}</p>"
+                safe_code = html.escape(code, quote=True)
+                nodes.append(
+                    '<section class="hash-node">'
+                    "<p><strong>URL key:</strong> "
+                    f"<code>{html.escape(url)}</code></p>"
+                    "<p><strong>Short code:</strong> "
+                    f"<code>{safe_code}</code></p>"
+                    "<p><strong>Short link:</strong> "
+                    f'<a href="/{safe_code}">/{safe_code}</a></p>'
+                    f"{inspection}<details><summary>Horner hash calculation"
+                    "</summary><ol>"
                     + "".join(
                         f"<li><code>{html.escape(line)}</code></li>"
                         for line in calculation
                     )
-                    + "</ol></li>"
+                    + "</ol></details></section>"
                 )
+                if not is_linear:
+                    nodes.append(
+                        '<span class="chain-arrow" aria-hidden="true">&rarr;</span>'
+                    )
+            if not is_linear:
+                nodes.append('<span class="chain-end">None</span>')
             rows.append(
-                f"<tr><td>{bucket_index}</td><td><ol>{''.join(entries)}</ol></td></tr>"
+                f'<tr><td>{bucket_index}</td><td><div class="chain">'
+                f"{''.join(nodes)}</div></td></tr>"
             )
 
         return (
@@ -99,8 +110,13 @@ class ShortenerRequestHandler(BaseHTTPRequestHandler):
             f"<title>{table.strategy.title()} inspection</title>"
             f"<h1>{table.strategy.title()} inspection</h1>"
             f"<p>Horner hashing with coefficient 31; capacity {table.capacity}.</p>"
+            "<style>table{border-collapse:collapse}th,td{border:1px solid #888;"
+            "padding:.5rem;vertical-align:top}.chain{display:flex;flex-wrap:wrap;"
+            "align-items:center;gap:.5rem}.hash-node{border:1px solid #666;"
+            "padding:.5rem;max-width:28rem;overflow-wrap:anywhere}.hash-node p"
+            "{margin:.25rem 0}.chain-arrow{font-size:1.5rem}</style>"
             f"<table border=\"1\"><thead><tr><th>{position_name}</th>"
-            "<th>Entries and Horner calculation</th></tr></thead><tbody>"
+            "<th>Nodes and Horner calculations</th></tr></thead><tbody>"
             f"{''.join(rows)}</tbody></table><p><a href=\"/\">Home</a></p></html>"
         )
 
