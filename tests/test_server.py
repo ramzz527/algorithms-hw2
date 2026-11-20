@@ -102,9 +102,19 @@ class ServerTests(unittest.TestCase):
         self.assertEqual(body.count(b"<details>"), 2)
         self.assertIn(b"<summary>Horner hash calculation</summary>", body)
 
-    def test_linear_table_page_shows_examined_slots(self):
+    def test_linear_table_page_shows_wraparound_and_horner_calculation(self):
         linear_shortener = Shortener(LinearProbingHashTable)
-        linear_shortener.shorten("https://example.com/linear")
+        table = linear_shortener._codes_by_url
+        urls = []
+        candidate = 0
+        while len(urls) < 3:
+            url = f"https://example.com/wrap-{candidate}"
+            if table.hash_steps(url)[-1][3] == 7:
+                urls.append(url)
+            candidate += 1
+        for url in urls:
+            linear_shortener.shorten(url)
+
         server = create_server("127.0.0.1", 0, linear_shortener)
         thread = threading.Thread(target=server.serve_forever)
         thread.start()
@@ -125,8 +135,11 @@ class ServerTests(unittest.TestCase):
         self.assertEqual(status, 200)
         self.assertIn(b"Linear Probing inspection", body)
         self.assertIn(b"Slot", body)
-        self.assertIn(b"Slots examined:", body)
-        self.assertIn(b"https://example.com/linear", body)
+        self.assertIn(b"Slots examined: 7 &rarr; 0 &rarr; 1", body)
+        self.assertIn(b"Horner hash calculation", body)
+        self.assertIn(b"h1 =", body)
+        for url in urls:
+            self.assertIn(url.encode(), body)
 
 
 if __name__ == "__main__":
