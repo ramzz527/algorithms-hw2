@@ -1,9 +1,27 @@
 import unittest
 
+from src.hash_table import HashTable
 from src.linear_probing import LinearProbingHashTable
 
 
 class LinearProbingTests(unittest.TestCase):
+    def test_public_operations_match_chaining_table_contract(self):
+        for table_type in (HashTable, LinearProbingHashTable):
+            with self.subTest(table_type=table_type.__name__):
+                table = table_type(initial_capacity=4, max_load_factor=None)
+
+                self.assertEqual(len(table), 0)
+                self.assertFalse(table.contains("key"))
+                self.assertIsNone(table.get("key"))
+                self.assertIsNone(table.remove("key"))
+                self.assertIsNone(table.put("key", "first"))
+                self.assertTrue(table.contains("key"))
+                self.assertEqual(table.get("key"), "first")
+                self.assertIsNone(table.put("key", "updated"))
+                self.assertEqual(len(table), 1)
+                self.assertEqual(table.remove("key"), "updated")
+                self.assertEqual(len(table), 0)
+
     def keys_for_bucket(self, table, bucket, count):
         keys = []
         candidate = 0
