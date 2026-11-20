@@ -33,10 +33,26 @@ class ShortenerTests(unittest.TestCase):
 
     def test_rejects_urls_without_http_scheme_or_hostname(self):
         shortener = Shortener()
-        for url in ("ftp://example.com/file", "https:///missing-host", "not a url"):
+        for url in (
+            "ftp://example.com/file",
+            "https:///missing-host",
+            "https://example.com/with space",
+            "not a url",
+        ):
             with self.subTest(url=url):
                 with self.assertRaises(ValueError):
                     shortener.shorten(url)
+
+    def test_rejected_url_does_not_consume_a_code(self):
+        shortener = Shortener()
+
+        first_code = shortener.shorten("https://example.com/first")
+        with self.assertRaises(ValueError):
+            shortener.shorten("https://example.com/invalid url")
+        next_code = shortener.shorten("https://example.com/next")
+
+        self.assertEqual(first_code, "0")
+        self.assertEqual(next_code, "1")
 
     def test_unknown_code_returns_none(self):
         self.assertIsNone(Shortener().expand("unknown"))
