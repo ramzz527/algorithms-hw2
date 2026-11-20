@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="560" viewBox="0 0 1000 560">
+<rect width="100%" height="100%" fill="white"/>
+<text x="500" y="27" text-anchor="middle" font-family="sans-serif" font-size="18">Hash table search cost: measurement and theory</text>
+<line x1="72" y1="496.0" x2="650" y2="496.0" stroke="#dddddd"/>
+<text x="62" y="500.0" text-anchor="end" font-family="sans-serif" font-size="12">0</text>
+<line x1="72" y1="408.4" x2="650" y2="408.4" stroke="#dddddd"/>
+<text x="62" y="412.4" text-anchor="end" font-family="sans-serif" font-size="12">14</text>
+<line x1="72" y1="320.8" x2="650" y2="320.8" stroke="#dddddd"/>
+<text x="62" y="324.8" text-anchor="end" font-family="sans-serif" font-size="12">28</text>
+<line x1="72" y1="233.2" x2="650" y2="233.2" stroke="#dddddd"/>
+<text x="62" y="237.2" text-anchor="end" font-family="sans-serif" font-size="12">42</text>
+<line x1="72" y1="145.6" x2="650" y2="145.6" stroke="#dddddd"/>
+<text x="62" y="149.6" text-anchor="end" font-family="sans-serif" font-size="12">56</text>
+<line x1="72" y1="58.0" x2="650" y2="58.0" stroke="#dddddd"/>
+<text x="62" y="62.0" text-anchor="end" font-family="sans-serif" font-size="12">70</text>
+<text x="72.0" y="518" text-anchor="middle" font-family="sans-serif" font-size="11">0.1</text>
+<text x="144.2" y="518" text-anchor="middle" font-family="sans-serif" font-size="11">0.2</text>
+<text x="216.5" y="518" text-anchor="middle" font-family="sans-serif" font-size="11">0.3</text>
+<text x="288.8" y="518" text-anchor="middle" font-family="sans-serif" font-size="11">0.4</text>
+<text x="361.0" y="518" text-anchor="middle" font-family="sans-serif" font-size="11">0.5</text>
+<text x="433.2" y="518" text-anchor="middle" font-family="sans-serif" font-size="11">0.6</text>
+<text x="505.5" y="518" text-anchor="middle" font-family="sans-serif" font-size="11">0.7</text>
+<text x="577.8" y="518" text-anchor="middle" font-family="sans-serif" font-size="11">0.8</text>
+<text x="650.0" y="518" text-anchor="middle" font-family="sans-serif" font-size="11">0.9</text>
+<line x1="72" y1="58" x2="72" y2="496" stroke="#333"/>
+<line x1="72" y1="496" x2="650" y2="496" stroke="#333"/>
+<text x="22" y="280.0" transform="rotate(-90 22 280.0)" text-anchor="middle" font-family="sans-serif" font-size="13">Average probes</text>
+<text x="361.0" y="546" text-anchor="middle" font-family="sans-serif" font-size="13">Load factor (α)</text>
+<polyline points="72.0,489.4 144.2,489.1 216.5,488.9 288.8,488.5 361.0,488.2 433.2,487.8 505.5,487.6 577.8,487.2 650.0,487.0" fill="none" stroke="#1769aa" stroke-width="2"/>
+<line x1="668" y1="76" x2="696" y2="76" stroke="#1769aa" stroke-width="2"/>
+<text x="704" y="80" font-family="sans-serif" font-size="11">Chaining successful measured</text>
+<polyline points="72.0,489.4 144.2,489.1 216.5,488.8 288.8,488.5 361.0,488.2 433.2,487.9 505.5,487.6 577.8,487.2 650.0,486.9" fill="none" stroke="#6baed6" stroke-width="2" stroke-dasharray="6 4"/>
+<line x1="668" y1="94" x2="696" y2="94" stroke="#6baed6" stroke-width="2" stroke-dasharray="6 4"/>
+<text x="704" y="98" font-family="sans-serif" font-size="11">Chaining successful theory</text>
+<polyline points="72.0,495.4 144.2,494.8 216.5,494.1 288.8,493.5 361.0,492.8 433.2,492.2 505.5,491.5 577.8,490.9 650.0,490.3" fill="none" stroke="#c62828" stroke-width="2"/>
+<line x1="668" y1="112" x2="696" y2="112" stroke="#c62828" stroke-width="2"/>
+<text x="704" y="116" font-family="sans-serif" font-size="11">Chaining unsuccessful measured</text>
+<polyline points="72.0,495.4 144.2,494.7 216.5,494.1 288.8,493.5 361.0,492.9 433.2,492.2 505.5,491.6 577.8,491.0 650.0,490.4" fill="none" stroke="#ef9a9a" stroke-width="2" stroke-dasharray="6 4"/>
+<line x1="668" y1="130" x2="696" y2="130" stroke="#ef9a9a" stroke-width="2" stroke-dasharray="6 4"/>
+<text x="704" y="134" font-family="sans-serif" font-size="11">Chaining unsuccessful theory</text>
+<polyline points="72.0,489.4 144.2,488.8 216.5,488.5 288.8,487.7 361.0,487.0 433.2,484.9 505.5,481.3 577.8,473.2 650.0,452.5" fill="none" stroke="#2e7d32" stroke-width="2"/>
+<line x1="668" y1="148" x2="696" y2="148" stroke="#2e7d32" stroke-width="2"/>
+<text x="704" y="152" font-family="sans-serif" font-size="11">Linear successful measured</text>
+<polyline points="72.0,489.4 144.2,489.0 216.5,488.4 288.8,487.7 361.0,486.6 433.2,485.1 505.5,482.4 577.8,477.2 650.0,461.6" fill="none" stroke="#81c784" stroke-width="2" stroke-dasharray="6 4"/>
+<line x1="668" y1="166" x2="696" y2="166" stroke="#81c784" stroke-width="2" stroke-dasharray="6 4"/>
+<text x="704" y="170" font-family="sans-serif" font-size="11">Linear successful theory</text>
+<polyline points="72.0,489.0 144.2,488.0 216.5,486.5 288.8,483.5 361.0,480.2 433.2,472.0 505.5,452.9 577.8,408.7 650.0,69.3" fill="none" stroke="#ef6c00" stroke-width="2"/>
+<line x1="668" y1="184" x2="696" y2="184" stroke="#ef6c00" stroke-width="2"/>
+<text x="704" y="188" font-family="sans-serif" font-size="11">Linear unsuccessful measured</text>
+<polyline points="72.0,489.0 144.2,488.0 216.5,486.5 288.8,484.2 361.0,480.4 433.2,473.3 505.5,458.1 577.8,414.7 650.0,180.0" fill="none" stroke="#ffb74d" stroke-width="2" stroke-dasharray="6 4"/>
+<line x1="668" y1="202" x2="696" y2="202" stroke="#ffb74d" stroke-width="2" stroke-dasharray="6 4"/>
+<text x="704" y="206" font-family="sans-serif" font-size="11">Linear unsuccessful theory</text>
+</svg>
