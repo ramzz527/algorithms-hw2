@@ -37,6 +37,14 @@ class HashTableTests(unittest.TestCase):
             with self.subTest(key=key):
                 self.assertEqual(table.get(key), value)
 
+    def test_resize_can_be_disabled_for_fixed_capacity_measurements(self):
+        table = HashTable(initial_capacity=4, max_load_factor=None)
+        for index in range(12):
+            table.put(f"key-{index}", index)
+
+        self.assertEqual(table.capacity, 4)
+        self.assertEqual(len(table), 12)
+
     def test_remove_and_reinsert(self):
         table = HashTable()
         table.put("key", 1)

@@ -11,10 +11,15 @@ class _Node:
 
 
 class HashTable:
-    def __init__(self, initial_capacity: int = 8):
+    def __init__(
+        self, initial_capacity: int = 8, max_load_factor: float | None = 0.75
+    ):
         if type(initial_capacity) is not int or initial_capacity < 1:
             raise ValueError("initial_capacity must be a positive integer")
+        if max_load_factor is not None and max_load_factor <= 0:
+            raise ValueError("max_load_factor must be positive or None")
         self.capacity = initial_capacity
+        self.max_load_factor = max_load_factor
         self._buckets: list[_Node | None] = [None] * initial_capacity
         self._size = 0
 
@@ -65,7 +70,10 @@ class HashTable:
             node.value = value
             return
 
-        if (self._size + 1) / self.capacity > 0.75:
+        if (
+            self.max_load_factor is not None
+            and (self._size + 1) / self.capacity > self.max_load_factor
+        ):
             self._resize(self.capacity * 2)
             index = self._index(key)
         self._buckets[index] = _Node(key, value, self._buckets[index])
