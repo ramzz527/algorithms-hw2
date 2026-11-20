@@ -51,6 +51,19 @@ class LinearProbingTests(unittest.TestCase):
         with self.assertRaises(OverflowError):
             table.put("third", 3)
 
+    def test_removed_slot_in_full_table_can_be_reused(self):
+        table = LinearProbingHashTable(initial_capacity=2, max_load_factor=None)
+        keys = self.keys_for_bucket(table, 1, 3)
+        table.put(keys[0], 0)
+        table.put(keys[1], 1)
+
+        self.assertEqual(table.remove(keys[0]), 0)
+        table.put(keys[2], 2)
+
+        self.assertEqual(len(table), 2)
+        self.assertEqual(table.get(keys[1]), 1)
+        self.assertEqual(table.get(keys[2]), 2)
+
     def test_tombstone_does_not_break_later_collision_lookup(self):
         table = LinearProbingHashTable(initial_capacity=8, max_load_factor=None)
         keys = self.keys_for_bucket(table, 5, 3)
