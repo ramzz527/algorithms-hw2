@@ -8,10 +8,15 @@ from src.base62 import encode
 from src.hash_table import HashTable
 
 
-CAPACITY = 1024
+CAPACITY = 4093
 LOAD_FACTORS = [step / 4 for step in range(1, 17)]
 MISS_SAMPLES = 10_000
 OUTPUT_DIR = Path(__file__).parent
+
+
+def _random_url(generator: random.Random) -> str:
+    token = encode(generator.getrandbits(64))
+    return f"https://{token}.example.test/{token}"
 
 
 def _bucket_index(table: HashTable, key: str) -> int:
@@ -19,47 +24,54 @@ def _bucket_index(table: HashTable, key: str) -> int:
     return steps[-1][3] if steps else 0
 
 
-def measure(load_factor: float) -> tuple[float, float]:
+def measure(load_factor: float) -> tuple[float, float, float]:
     item_count = round(load_factor * CAPACITY)
+    actual_load_factor = item_count / CAPACITY
     table = HashTable(initial_capacity=CAPACITY, max_load_factor=None)
     generator = random.Random(2026)
     entries = []
     while len(entries) < item_count:
-        key = f"item-{encode(generator.getrandbits(64))}"
+        key = _random_url(generator)
         if table.contains(key):
             continue
         value = len(entries)
         table.put(key, value)
-        entries.append((key, value))
+        entries.append(key)
 
     buckets = table.bucket_items()
     successful_comparisons = 0
-    for key, _ in entries:
+    for key in entries:
         chain = buckets[_bucket_index(table, key)]
         for comparisons, (stored_key, _) in enumerate(chain, start=1):
             if stored_key == key:
                 successful_comparisons += comparisons
                 break
+        else:
+            raise RuntimeError(f"inserted URL was not found: {key}")
 
     unsuccessful_comparisons = 0
+    miss_generator = random.Random(2027)
     sampled_misses = 0
     while sampled_misses < MISS_SAMPLES:
-        missing_key = f"missing-{encode(generator.getrandbits(64))}"
+        missing_key = _random_url(miss_generator)
         if table.contains(missing_key):
             continue
-        unsuccessful_comparisons += len(buckets[_bucket_index(table, missing_key)])
+        unsuccessful_comparisons += len(
+            buckets[_bucket_index(table, missing_key)]
+        )
         sampled_misses += 1
 
     return (
+        actual_load_factor,
         successful_comparisons / item_count,
         unsuccessful_comparisons / MISS_SAMPLES,
     )
 
 
 def _write_csv(rows: list[tuple[float, float, float, float, float]]) -> None:
-    output_path = OUTPUT_DIR / "probe_results.csv"
+    output_path = OUTPUT_DIR / "results.csv"
     with output_path.open("w", newline="", encoding="utf-8") as output:
-        writer = csv.writer(output)
+        writer = csv.writer(output, lineterminator="\n")
         writer.writerow(
             (
                 "load_factor",
@@ -96,7 +108,7 @@ def _write_svg(rows: list[tuple[float, float, float, float, float]]) -> None:
         f'viewBox="0 0 {width} {height}">',
         '<rect width="100%" height="100%" fill="white"/>',
         '<text x="380" y="25" text-anchor="middle" font-family="sans-serif" '
-        'font-size="17">Separate chaining: measured and theoretical comparisons</text>',
+        f'font-size="17">Separate chaining comparisons (capacity {CAPACITY})</text>',
     ]
 
     for tick in range(6):
@@ -149,7 +161,7 @@ def _write_svg(rows: list[tuple[float, float, float, float, float]]) -> None:
         )
 
     parts.append("</svg>")
-    (OUTPUT_DIR / "probe_results.svg").write_text(
+    (OUTPUT_DIR / "results.svg").write_text(
         "\n".join(parts) + "\n", encoding="utf-8"
     )
 
@@ -157,20 +169,21 @@ def _write_svg(rows: list[tuple[float, float, float, float, float]]) -> None:
 def main() -> None:
     rows = []
     for load_factor in LOAD_FACTORS:
-        successful, unsuccessful = measure(load_factor)
+        actual_load_factor, successful, unsuccessful = measure(load_factor)
         rows.append(
             (
-                load_factor,
+                actual_load_factor,
                 successful,
-                1 + load_factor / 2,
+                1 + actual_load_factor / 2,
                 unsuccessful,
-                load_factor,
+                actual_load_factor,
             )
         )
 
     _write_csv(rows)
     _write_svg(rows)
-    print("α | 성공 측정/이론 | 실패 측정/이론")
+    print(f"용량 {CAPACITY}, 삽입 URL 개수에 따른 적재율 실험")
+    print("α | 성공 탐색 측정/이론 | 실패 탐색 측정/이론")
     for load, success, success_theory, failure, failure_theory in rows:
         print(
             f"{load:.2f} | {success:.3f}/{success_theory:.3f} | "
@@ -178,8 +191,9 @@ def main() -> None:
         )
     print(
         "이론값은 키가 버킷에 균등하게 배치된다는 근사입니다. 유한한 표본과 "
-        "실제 키 분포·삽입 순서 때문에 측정값이 달라질 수 있으며, α가 커질수록 "
-        "충돌 체인이 길어져 탐색 비용이 증가합니다."
+        "Horner 해시에서 URL 키가 만드는 실제 분포·삽입 순서 때문에 측정값이 "
+        "달라질 수 있습니다. α가 1을 넘어도 체이닝은 계속 저장할 수 있지만, "
+        "평균 충돌 체인과 탐색 비용이 함께 커집니다."
     )
 
 
